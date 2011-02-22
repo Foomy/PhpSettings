@@ -66,17 +66,17 @@ class PhpSettings
 		switch ($configType) {
 			case self::SAVE_AS_INI:
 				$this->_mode = self::SAVE_AS_INI;
-				$this->_initConfigIni($file);
+				$this->initConfigIni($file);
 				break;
 
 			case self::SAVE_AS_XML:
 				$this->_mode = self::SAVE_AS_XML;
-				$this->_initConfigXml($file);
+				$this->initConfigXml($file);
 				break;
 
 			default:
 				$this->_mode = self::SAVE_AS_INI;
-				$this->_initConfigIni($file);
+				$this->initConfigIni($file);
 		}// switch
 	}
 
@@ -137,13 +137,13 @@ class PhpSettings
 	 */
 	public function loadFile($file)
 	{
-		switch ($this->_extractFileExtension($file)) {
+		switch ($this->extractFileExtension($file)) {
 			case self::SAVE_AS_INI:
-				$this->_initConfigIni($file);
+				$this->initConfigIni($file);
 				break;
 
 			case self::SAVE_AS_XML:
-				$this->_initConfigXml($file);
+				$this->initConfigXml($file);
 				break;
 
 			default:
@@ -193,7 +193,7 @@ class PhpSettings
 			throw new Exception(self::ERR_NO_OBJECTS);
 		}
 
-		$this->_processObjects($this->_objRegister);
+		$this->processObjects($this->_objRegister);
 		$this->_writer->write();
 	}
 
@@ -202,12 +202,12 @@ class PhpSettings
 	 * prepare the config writer and file for
 	 * writing ini files.
 	 *
-	 * @todo   Try to merge _initConfigIni() and _initConfigXml()
+	 * @todo   Try to merge initConfigIni() and initConfigXml()
 	 *
 	 * @param  string $file
 	 * @return void
 	 */
-	private function _initConfigIni($file)
+	private function initConfigIni($file)
 	{
 		/*
 		 * Prepare existing config file for read and edit,
@@ -239,12 +239,12 @@ class PhpSettings
 	 * prepare the config writer and file for
 	 * writing xml files.
 	 *
-	 * @todo   Try to merge _initConfigIni() and _initConfigXml()
+	 * @todo   Try to merge initConfigIni() and initConfigXml()
 	 *
 	 * @param  string $file
 	 * @return void
 	 */
-	private function _initConfigXml($file)
+	private function initConfigXml($file)
 	{
 		/*
 		 * Prepare existing config file for read and edit
@@ -277,7 +277,7 @@ class PhpSettings
 	 * @param  string $filepath
 	 * @return string $extension
 	 */
-	private function _extractFileExtension($filepath)
+	private function extractFileExtension($filepath)
 	{
 		$fileArray = array_reverse(explode('/', $filepath));
 		list($name, $extension) = explode('.', $fileArray[0]);
@@ -291,11 +291,11 @@ class PhpSettings
 	 * @param   void
 	 * @return  void
 	 */
-	private function _processObjects(Array $objects)
+	private function processObjects(Array $objects)
 	{
 		foreach ($objects as $object) {
 			if (is_object($object)) {
-				$this->_processObject($object);
+				$this->processObject($object);
 			}
 		}
 	}
@@ -308,7 +308,7 @@ class PhpSettings
 	 *
 	 * @param Mixed $object
 	 */
-	private function _processObject($object, $i = 0)
+	private function processObject($object, $i = 0)
 	{
 		/*
 		 * Identify object name, in order to create
@@ -344,9 +344,9 @@ class PhpSettings
 			}
 
 			if (is_array($value)) {
-				$this->_processObjects($value);
+				$this->processObjects($value);
 			} elseif (is_object($value)) {
-				$this->_processObject($value);
+				$this->processObject($value);
 			} else {
 				$keyValuePair = $property . ' = ' . $value . PHP_EOL;
 				fb($keyValuePair);
