@@ -6,15 +6,13 @@
  * This class provides methods to save entire objects in
  * configuration files. It is based upon Zend_Config.
  *
- * @package     PHPSettings
- * @subpackage  Api
+ * @package	PhpSettings
+ * @author	Sascha Schneider <foomy.code@arcor.de>
  *
- * @author      Sascha Schneider <foomy.code@arcor.de>
- *
- * @uses Zend_Config_Ini
- * @uses Zend_Config_Writer_Ini
- * @uses Zend_Config_Xml
- * @uses Zend_Config_Writer_xml
+ * @uses	Zend_Config_Ini
+ * @uses	Zend_Config_Writer_Ini
+ * @uses	Zend_Config_Xml
+ * @uses	Zend_Config_Writer_xml
  *
  * Zend_Config is written by Zend Technologies USA Inc. (http://www.zend.com)
  */
@@ -47,19 +45,17 @@ class PhpSettings
 
 	private $_objRegister	= array();
 	private $_filenames		= array();
-
-	private $_config = null;
-	private $_writer = null;
-
-	private $_mode = null;
+	private $_config		= null;
+	private $_writer		= null;
+	private $_mode			= null;
+	private $_savePath		= '';
 
 	/**
 	 * API constructor.
 	 *
-	 * @param $file        Optional! Name of the config file.
-	 * @param $configType  Config
-	 *
-	 * return PHPSettings_Api
+	 * @param	$file		Optional! Name of the file to be laoded.
+	 * @param	$configType	Optional! Type of the config to be read or saved.
+	 * @return	PhpSettings
 	 */
 	public function __construct($file = '', $configType = self::SAVE_AS_INI)
 	{
@@ -83,8 +79,8 @@ class PhpSettings
 	/**
 	 * Adds an object to the object register.
 	 *
-	 * @param  Object $object
-	 * @return void
+	 * @param	Object $object
+	 * @return	void
 	 */
 	public function addObject($object)
 	{
@@ -96,8 +92,8 @@ class PhpSettings
 	/**
 	 * Adds several objects to the object register.
 	 *
-	 * @param  Array $objects
-	 * @return void
+	 * @param	Array $objects
+	 * @return	void
 	 */
 	public function addObjects(Array $objects)
 	{
@@ -110,7 +106,7 @@ class PhpSettings
 	 * Sets the filename for the configuration file in which the object
 	 * will be stored.
 	 *
-	 * @param string $filename
+	 * @param	string $filename
 	 */
 	public function addFilename($filename)
 	{
@@ -120,7 +116,7 @@ class PhpSettings
 	/**
 	 * Sets several filenames, if more than one objects should be stored.
 	 *
-	 * @param array $filenames
+	 * @param	array $filenames
 	 */
 	public function addFilenames(Array $filenames)
 	{
@@ -130,10 +126,49 @@ class PhpSettings
 	}
 
 	/**
+	 * Returns the read configuration
+	 * as an object.
+	 *
+	 * @param	void
+	 * @return	Zend_Config_Ini | Zend_Config_Xml
+	 */
+	public function getConfigAsObject()
+	{
+		if ( null !== $this->_config ) {
+			return $this->_config;
+		} else {
+			throw new Exception(self::ERR_NO_FILE_LOADED);
+		}
+	}
+
+	/**
+	 * Returns the read configuration
+	 * as an array.
+	 *
+	 * @param	void
+	 * @return	array
+	 */
+	public function getConfigAsArray()
+	{
+		return $this->_config->toArray();
+	}
+
+	/**
+	 * Sets the path for new object to be saved.
+	 * 
+	 * @param	string $path
+	 */
+	public function setSavePath($path) {
+		if (! empty($path)) {
+			$this->savePath = $path;
+		}
+	}
+	
+	/**
 	 * Prepares the the config writer for writing an existing file.
 	 *
-	 * @param  string $file
-	 * @return void
+	 * @param	string $file
+	 * @return	void
 	 */
 	public function loadFile($file)
 	{
@@ -152,40 +187,12 @@ class PhpSettings
 	}
 
 	/**
-	 * Returns the read configuration
-	 * as an object.
-	 *
-	 * @param  void
-	 * @return Zend_Config_Ini | Zend_Config_Xml
-	 */
-	public function getConfigAsObject()
-	{
-		if ( null !== $this->_config ) {
-			return $this->_config;
-		} else {
-			throw new Exception(self::ERR_NO_FILE_LOADED);
-		}
-	}
-
-	/**
-	 * Returns the read configuration
-	 * as an array.
-	 *
-	 * @param  void
-	 * @return Array
-	 */
-	public function getConfigAsArray()
-	{
-		return $this->_config->toArray();
-	}
-
-	/**
 	 * Writes the configuration to the file.
 	 *
-	 * @param  void
-	 * @return void
+	 * @param	void
+	 * @return	void
 	 *
-	 * @throws Exception
+	 * @throws	Exception
 	 */
 	public function save()
 	{
@@ -194,6 +201,7 @@ class PhpSettings
 		}
 
 		$this->processObjects($this->_objRegister);
+
 		$this->_writer->write();
 	}
 
@@ -202,18 +210,20 @@ class PhpSettings
 	 * prepare the config writer and file for
 	 * writing ini files.
 	 *
-	 * @todo   Try to merge initConfigIni() and initConfigXml()
+	 * @todo	Try to merge initConfigIni() and initConfigXml()
 	 *
-	 * @param  string $file
-	 * @return void
+	 * @param	string $file
+	 * @return	void
 	 */
-	private function initConfigIni($file)
+	protected function initConfigIni($file)
 	{
+		
 		/*
 		 * Prepare existing config file for read and edit,
 		 *
 		 */
-		if ( '' !== $file ) {
+		if ( ! empty($file) ) {
+			$this->file = $file;
 			$this->_config = new Zend_Config_Ini($file, null, array(
 				'skipExtends' => true,
 				'allowModifications' => true
@@ -229,7 +239,7 @@ class PhpSettings
 			$this->_writer->setConfig($this->_config);
 		}
 
-		if ( '' !== $file ) {
+		if ( ! empty($file) ) {
 			$this->_writer->setFilename($file);
 		}
 	}
@@ -239,17 +249,17 @@ class PhpSettings
 	 * prepare the config writer and file for
 	 * writing xml files.
 	 *
-	 * @todo   Try to merge initConfigIni() and initConfigXml()
+	 * @todo	Try to merge initConfigIni() and initConfigXml()
 	 *
-	 * @param  string $file
-	 * @return void
+	 * @param	string $file
+	 * @return	void
 	 */
-	private function initConfigXml($file)
+	protected function initConfigXml($file)
 	{
 		/*
 		 * Prepare existing config file for read and edit
 		 */
-		if ( '' !== $file ) {
+		if ( ! empty($file) ) {
 			$this->_config = new Zend_Config_Xml($file, null, array(
 				'skipExtends' => true,
 				'allowModifications' => true
@@ -265,7 +275,7 @@ class PhpSettings
 			$this->_writer->setConfig($this->_config);
 		}
 
-		if ( '' !== $file ) {
+		if ( ! empty($file) ) {
 			$this->_writer->setFilename($file);
 		}
 
@@ -274,10 +284,10 @@ class PhpSettings
 	/**
 	 * Extracts the file extension of a given filepath.
 	 *
-	 * @param  string $filepath
-	 * @return string $extension
+	 * @param	string $filepath
+	 * @return	string $extension
 	 */
-	private function extractFileExtension($filepath)
+	protected function extractFileExtension($filepath)
 	{
 		$fileArray = array_reverse(explode('/', $filepath));
 		list($name, $extension) = explode('.', $fileArray[0]);
@@ -288,10 +298,10 @@ class PhpSettings
 	/**
 	 * Processes rekursively the objects in the object register
 	 *
-	 * @param   void
-	 * @return  void
+	 * @param	void
+	 * @return	void
 	 */
-	private function processObjects(Array $objects)
+	protected function processObjects(Array $objects)
 	{
 		foreach ($objects as $object) {
 			if (is_object($object)) {
@@ -304,37 +314,44 @@ class PhpSettings
 	 * Processes one Object and push it to the config,
 	 * in order to prepare it for saving.
 	 *
-	 * @todo    Dynamically find the right getter for each property.
+	 * @todo	Dynamically find the right getter for each property.
 	 *
-	 * @param Mixed $object
+	 * @param	Mixed $object
 	 */
-	private function processObject($object, $i = 0)
+	protected function processObject($object, $i = 0)
 	{
 		/*
 		 * Identify object name, in order to create
 		 * a section in the INI file.
+		 * 
+		 * @todo: Each object should create a new file named equal to the object.
 		 */
 		if (method_exists($object, 'getId')) {
 			$section = '[' . get_class($object) . '_' . $object->getId() . ']';
 		} else {
 			$section = '[' . get_class($object) . '_' . ++$i . ']';
 		}
-		fb($section);
 
 		/*
 		 * Use reflection class in order to analyse the object.
 		 */
-		$reflect = new ReflectionClass($object);
+		$reflect = $this->getReflection($object);
 		
-		
-
+		$methods = $this->extractMethodNames($reflect);
+		$propertys = $this->extractPropertys($reflect);
+	}
+	
+	protected function extractMethodNames(ReflectionClass $reflect) {
 		$methods = array();
 		foreach ($reflect->getMethods() as $methodInfo) {
 			if ('__construct' !== $methodInfo->name) {
 				$methods[] = $methodInfo->name;
 			}
 		}
-
+		return $methods;
+	}
+	
+	protected function extractPropertys(ReflectionClass $reflect, $methods = array()) {
 		foreach ($reflect->getProperties() as $property) {
 			$property = substr($property->name, 1);
 			$getterName = 'get' . ucfirst($property);
@@ -349,8 +366,19 @@ class PhpSettings
 				$this->processObject($value);
 			} else {
 				$keyValuePair = $property . ' = ' . $value . PHP_EOL;
-				fb($keyValuePair);
 			}
 		}
 	}
+	
+	protected function getReflection($object, ReflectionClass $reflect = null) {
+		if (null === $reflect) {
+			$reflect = new ReflectionClass($object);
+		}
+		return $reflect;
+	} 
 }
+
+/**
+ *  "Wenn wir heute noch was vermasseln koennen, sagt mir bescheid!"
+ *  (James T. Kirk, Star Trek VI - Das unendeckte Land)
+ */
